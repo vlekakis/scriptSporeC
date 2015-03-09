@@ -40,6 +40,10 @@ def main():
                         help='YCSB binary path',
                         required=True)
 
+    parser.add_argument('--dryRun',
+                        action='store_true',
+                        default=False)
+
 
 
     args = parser.parse_args()
@@ -71,7 +75,10 @@ def main():
                 print "= = = = = = = = = = = = = = = = = = = ="
                 print "Running ", mode, " for client",  client, "and workload", workload
                 print "= = = = = = = = = = = = = = = = = = = ="
-                os.system(run_cmd)
+                if args.dryRun:
+                    print run_cmd
+                else:
+                    os.system(run_cmd)
 
 
 
