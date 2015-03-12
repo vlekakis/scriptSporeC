@@ -40,11 +40,17 @@ def main():
                         help='YCSB binary path',
                         required=True)
 
+    parser.add_argument('-f',
+                        '--fLengths',
+                        type=str,
+                        nargs='+',
+                        help='Field length',
+                        required=True)
+
+
     parser.add_argument('--dryRun',
                         action='store_true',
                         default=False)
-
-
 
     args = parser.parse_args()
 
@@ -56,29 +62,30 @@ def main():
     print 'Creating output directory'
     os.mkdir(result_dir_name)
 
-    cmd = "%s %s %s -s -P %s > %s"
+    cmd = "%s %s %s -s -p fieldlength=%s -P %s > %s"
     modes = ['load', 'run']
     for client in args.clients:
         for workload in args.workloads:
-            for mode in modes:
+            for fieldLen in args.fLengths:
+                for mode in modes:
 
-                o_dir = result_dir_name
-                w_path = args.input
-                if w_path.endswith('/') == False:
-                    w_path += '/'
-                w_path += workload
-                if o_dir.endswith('/') == False:
-                    o_dir += '/'
-                o_dir+=mode+'_'+client+'_'+workload+'.txt'
+                    o_dir = result_dir_name
+                    w_path = args.input
+                    if w_path.endswith('/') == False:
+                        w_path += '/'
+                    w_path += workload
+                    if o_dir.endswith('/') == False:
+                        o_dir += '/'
+                    o_dir+=mode+'_'+client+'_'+workload+'_'+fieldLen+'.txt'
 
-                run_cmd = cmd % (args.bin, mode, client, w_path, o_dir)
-                print "= = = = = = = = = = = = = = = = = = = ="
-                print "Running ", mode, " for client",  client, "and workload", workload
-                print "= = = = = = = = = = = = = = = = = = = ="
-                if args.dryRun:
-                    print run_cmd
-                else:
-                    os.system(run_cmd)
+                    run_cmd = cmd % (args.bin, mode, client, fieldLen, w_path, o_dir)
+                    print "= = = = = = = = = = = = = = = = = = = ="
+                    print "Running ", mode, " for client",  client, "and workload", workload
+                    print "= = = = = = = = = = = = = = = = = = = ="
+                    if args.dryRun:
+                        print run_cmd
+                    else:
+                        os.system(run_cmd)
 
 
 
