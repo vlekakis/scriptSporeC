@@ -1,7 +1,6 @@
 __author__ = 'lex'
 import argparse
 import os
-import shutil
 from datetime import date
 
 
@@ -52,15 +51,21 @@ def main():
                         action='store_true',
                         default=False)
 
+    parser.add_argument('--extraText',
+                        type=str,
+                        default="",
+                        help="Extra text to identify the run")
+
     args = parser.parse_args()
 
-    result_dir_name = args.output +'_'+ str(date.today())
-    if os.path.exists(result_dir_name):
-        print 'Given directory exists, deleting...'
-        shutil.rmtree(result_dir_name)
 
-    print 'Creating output directory'
-    os.mkdir(result_dir_name)
+    result_dir_name = args.output +'_'+ str(date.today())
+    if len(args.extraText) > 0:
+        result_dir_name += '_'+args.extraText
+
+    if os.path.exists(result_dir_name) == False:
+        print 'Given directory exists, deleting...'
+        os.mkdir(result_dir_name)
 
     cmd = "%s %s %s -s -p fieldlength=%s -P %s > %s"
     modes = ['load', 'run']
@@ -80,7 +85,7 @@ def main():
 
                     run_cmd = cmd % (args.bin, mode, client, fieldLen, w_path, o_dir)
                     print "= = = = = = = = = = = = = = = = = = = ="
-                    print "Running ", mode, " for client",  client, "and workload", workload
+                    print "Running ", mode, " for client",  client, "and workload", workload, "field", fieldLen
                     print "= = = = = = = = = = = = = = = = = = = ="
                     if args.dryRun:
                         print run_cmd
