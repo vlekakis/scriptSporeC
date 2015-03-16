@@ -56,6 +56,17 @@ def main():
                         default="",
                         help="Extra text to identify the run")
 
+    parser.add_argument('-t',
+                        '--timeseries',
+                        action='store_true',
+                        default=False)
+
+    parser.add_argument('-g',
+                        '--granularity',
+                        type=str,
+                        default="5000",
+                        help="Timeseries granularity")
+
     args = parser.parse_args()
 
 
@@ -67,7 +78,14 @@ def main():
         print 'Given directory exists, deleting...'
         os.mkdir(result_dir_name)
 
-    cmd = "%s %s %s -s -p fieldlength=%s -P %s > %s"
+    cmd = ""
+    if args.timeseries == False:
+        cmd = "%s %s %s -s -p fieldlength=%s -P %s > %s"
+    else:
+        cmd =  "%s %s %s -s -p fieldlength=%s "
+        cmd += "-p measurementtype=timeseries -p timeseries.granularity=%s  -P %s > %s"
+
+    #
     modes = ['load', 'run']
     for client in args.clients:
         for workload in args.workloads:
@@ -83,7 +101,14 @@ def main():
                         o_dir += '/'
                     o_dir+=mode+'_'+client+'_'+workload+'_'+fieldLen+'.txt'
 
-                    run_cmd = cmd % (args.bin, mode, client, fieldLen, w_path, o_dir)
+                    run_cmd = ""
+                    if args.timeseries == False:
+                        run_cmd = cmd % (args.bin, mode, client,
+                                         fieldLen, w_path, o_dir)
+                    else:
+                        run_cmd = cmd % (args.bin, mode, client,
+                                         fieldLen, args.granularity, w_path, o_dir)
+
                     print "= = = = = = = = = = = = = = = = = = = ="
                     print "Running ", mode, " for client",  client, "and workload", workload, "field", fieldLen
                     print "= = = = = = = = = = = = = = = = = = = ="
