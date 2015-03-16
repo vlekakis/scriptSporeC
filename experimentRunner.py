@@ -80,10 +80,10 @@ def main():
 
     cmd = ""
     if args.timeseries == False:
-        cmd = "%s %s %s -s -p fieldlength=%s -P %s > %s"
+        cmd = "%s %s %s -s -p fieldlength=%s -P %s > %s 2>%s"
     else:
         cmd =  "%s %s %s -s -p fieldlength=%s "
-        cmd += "-p measurementtype=timeseries -p timeseries.granularity=%s  -P %s > %s"
+        cmd += "-p measurementtype=timeseries -p timeseries.granularity=%s  -P %s > %s 2>%s"
 
     #
     modes = ['load', 'run']
@@ -93,21 +93,26 @@ def main():
                 for mode in modes:
 
                     o_dir = result_dir_name
+                    trace_track = result_dir_name
                     w_path = args.input
                     if w_path.endswith('/') == False:
                         w_path += '/'
                     w_path += workload
                     if o_dir.endswith('/') == False:
                         o_dir += '/'
-                    o_dir+=mode+'_'+client+'_'+workload+'_'+fieldLen+'.txt'
+                    if trace_track.endswith('/') == False:
+                        trace_track+= '/'
 
+                    o_dir+=mode+'_'+client+'_'+workload+'_'+fieldLen+'.txt'
+                    trace_track+=mode+'_'+client+'_'+workload+'_'+fieldLen+'_trace.txt'
                     run_cmd = ""
                     if args.timeseries == False:
                         run_cmd = cmd % (args.bin, mode, client,
-                                         fieldLen, w_path, o_dir)
+                                         fieldLen, w_path, o_dir, trace_track)
                     else:
                         run_cmd = cmd % (args.bin, mode, client,
-                                         fieldLen, args.granularity, w_path, o_dir)
+                                         fieldLen, args.granularity,
+                                         w_path, o_dir, trace_track)
 
                     print "= = = = = = = = = = = = = = = = = = = ="
                     print "Running ", mode, " for client",  client, "and workload", workload, "field", fieldLen
