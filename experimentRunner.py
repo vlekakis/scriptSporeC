@@ -113,6 +113,7 @@ def main():
     if args.timeseries == True:
         propertyCmd += "-p measurementtype=timeseries -p timeseries.granularity=%s "
 
+    print "= = = = = = = = = = = = = = = = = = = ="
     cmd = cmdPrefix + propertyCmd + cmdSuffix
     for client in args.clients:
         for workload in args.workloads:
@@ -155,22 +156,26 @@ def main():
                                              w_path, o_dir, trace_track)
 
                         elif args.timeseries == False and targetEnabled == True:
-                            run_cmd = cmd % (args.bin, mode, client,
-                                             target,
-                                             fieldLen, w_path, o_dir, trace_track)
+                            run_cmd = cmd % (args.bin, mode, client, fieldLen,
+                                             target, w_path, o_dir, trace_track)
                         else:
-                            run_cmd = cmd % (args.bin, mode, client, target,
-                                             fieldLen, args.granularity,
+                            run_cmd = cmd % (args.bin, mode, client, fieldLen,
+                                             target, args.granularity,
                                              w_path, o_dir, trace_track)
 
 
-                        print "= = = = = = = = = = = = = = = = = = = ="
-                        print "Running ", mode, " for client", client, "and workload", workload, "field", fieldLen
-                        print "= = = = = = = = = = = = = = = = = = = ="
+
+                        print "Running ", mode, \
+                            " for client", client, "and workload", workload,\
+                            "field", fieldLen, "target" , target
+
                         if args.dryRun:
                             print run_cmd
+                            print '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - '
                         else:
                             os.system(run_cmd)
+    print "= = = = = = = = = = = = = = = = = = = ="
+
 
 
 if __name__ == "__main__":
