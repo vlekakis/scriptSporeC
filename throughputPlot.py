@@ -1,5 +1,7 @@
 __author__ = 'lex'
 
+# Produces the throughput latency plot
+
 import argparse
 import commands as cmd
 import itertools
@@ -18,13 +20,12 @@ def proc_data(fileDir):
     }
 
     data = {}
-
-
     for key in fileDir.keys():
         for fp in fileDir[key]:
             target = fp.split('_')[-1]
             target = target[0:target.find(".")]
             fp = open(fp).readlines()
+
             throughput = filter(lambda x: x.startswith("[OVERALL], Throughput"), fp)
             if key == 'load_' or key == 'loadSS_':
                 latencyLoad = filter(lambda x: x.startswith(label[key]+', AverageLatency'), fp)
@@ -39,6 +40,7 @@ def proc_data(fileDir):
                 # Create keys for update/read because they share same run prefix
                 if key not in data.keys():
                     data[key] = {'T':[], 'LR':[], 'LU':[], 'x':[]}
+
 
                 data[key]['T'].append(throughput)
                 data[key]['LR'].append(latencyRead)
@@ -58,8 +60,8 @@ def get_file_dir(dataDir):
     for key in fileDir.keys():
         fileDir[key] = filter(lambda x: x.find(key) > 0, lsLtrOut)
         fileDir[key] = filter(lambda x: x.endswith('trace.txt') == False, fileDir[key])
-        fileDir[key] = map(lambda  x: x[x.find(key):], fileDir[key])
-        fileDir[key] = map(lambda  x: dataDir+x, fileDir[key])
+        fileDir[key] = map(lambda x: x[x.find(key):], fileDir[key])
+        fileDir[key] = map(lambda x: dataDir+x, fileDir[key])
 
     return fileDir
 
@@ -79,14 +81,32 @@ def clean_data(data):
 
     return data
 
-def plot_data(data, outputDir):
-        #TODO: add plot function
-        plt.plot(data["load_"]['T'], data["load_"]['L'], 'r--',
-                 data["loadSS_"]['T'], data["loadSS_"]['L'],'g^')
-        plt.axis([0, 2000, 0, 2700])
-        plt.show()
+def plot_data(data, output_directory, key, key_signature, filename, label_redis, label_signature):
+
+        if key == "load_":
+            plt.plot(data[key]['T'], data[key]['L'], 'bo--', label=label_redis)
+            plt.plot(data[key_signature]['T'], data[key_signature]['L'],'go--',label=label_signature)
+
+            plt.axis([0,
+                  max(data[key]['x'])+100,
+                  0,
+                  max([
+                      max(data[key]['L']),
+                      max(data[key_signature]['L'])]
+                  )+100])
+        else:
+            plt.plot(data[key]['T'], data[key]['LR'], 'bo--', label=label_redis+'-Read')
+            plt.plot(data[key]['T'], data[key]['LU'], 'bD--', label=label_redis+'-Update')
+            plt.plot(data[key_signature]['T'], data[key]['LR'], 'go--', label=label_redis+'-Read')
+            plt.plot(data[key_signature]['T'], data[key]['LU'], 'gD--', label=label_redis+'-Update')
 
 
+
+        plt.ylabel("Delay (usec)")
+        plt.xlabel("Operations (op/sec)")
+        plt.legend()
+        plt.savefig(output_directory+'/'+filename)
+        plt.clf()
 
 
 
@@ -110,11 +130,9 @@ def main():
 
     data = proc_data(filesDir)
     data = clean_data(data)
-    plot_data(data, args.output)
 
-
-
-
+    plot_data(data, args.output, "load_", "loadSS_", "load.pdf", "redis-vanilla", "redis-signature")
+    plot_data(data, args.output, "run_", "runSS_", "run.pdf", "redis-vanilla", "redis-signature")
 
 if __name__ == "__main__":
     main()
